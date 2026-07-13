@@ -3,11 +3,12 @@
 A blazing-fast, beautifully designed AI chat assistant. **SPYRO V1** is a
 dragon-themed chatbot powered under the hood by the free
 [Pollination AI](https://pollinations.ai) text API, fully rebranded as the
-SPYRO V1 model.
+SPYRO V1 model. Installable as a phone app (PWA) on iOS & Android.
 
-![SPYRO V1](https://img.shields.io/badge/model-SPYRO%20V1-ff6b1a?style=for-the-badge)
+![model](https://img.shields.io/badge/model-SPYRO%20V1-ff6b1a?style=for-the-badge)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=for-the-badge)
+![PWA](https://img.shields.io/badge/PWA-installable-5a0dfa?style=for-the-badge)
 
 ## ✨ Features
 
@@ -23,6 +24,8 @@ SPYRO V1 model.
   charcoal base. No blue/indigo.
 - **Responsive** — desktop sidebar collapses into a mobile sheet on small
   screens.
+- **PWA** — installable on iPhone & Android with a home-screen icon, full-screen,
+  and offline shell. See [Install as a phone app](#-install-as-a-phone-app-pwa).
 - **Atmospheric UI** — animated ember particles, fire-gradient logo, glass
   panels, and framer-motion transitions.
 - **Privacy** — `referrer` + `private` flags sent to the upstream API.
@@ -36,6 +39,14 @@ bun run dev
 
 Open http://localhost:3000.
 
+### Generate app icons (optional)
+
+Icons are pre-generated in `public/icons/`. To regenerate from the SVG source:
+
+```bash
+bun run scripts/generate-icons.ts
+```
+
 ### Scripts
 
 | Command | Description |
@@ -43,7 +54,36 @@ Open http://localhost:3000.
 | `bun run dev` | Start the dev server on port 3000 |
 | `bun run lint` | Run ESLint |
 | `bun run build` | Production build |
-| `bun run db:push` | Push Prisma schema (optional — not used by the chat) |
+| `bun run scripts/generate-icons.ts` | Regenerate PWA icons |
+
+## 📱 Install as a phone app (PWA)
+
+SPYRO V1 is a **Progressive Web App** — installable on iPhone & Android with
+its own home-screen icon, full-screen, no browser chrome. No app store needed.
+
+### Deploy it first
+Push the repo to any HTTPS host (Vercel, Netlify, GitHub Pages, Cloudflare
+Pages…). PWAs require HTTPS.
+
+### iPhone (Safari)
+1. Open the deployed URL in **Safari**.
+2. Tap the **Share** icon (square with up arrow).
+3. Tap **Add to Home Screen** → **Add**.
+
+### Android (Chrome)
+1. Open the deployed URL in **Chrome**.
+2. Tap the **menu (⋮)** → **Install app** (or **Add to Home screen**).
+
+On desktop Chrome/Edge, click the **Install** icon in the address bar.
+
+The app also shows an **"Install app"** button in the sidebar when the browser
+fires `beforeinstallprompt`, and an **"Install on phone"** hint popover with
+these same steps.
+
+> Want it in the **App Store / Play Store**? Wrap the same web app with
+> [Capacitor](https://capacitorjs.com): `npm i @capacitor/core @capacitor/cli`,
+> `npx cap init`, `npx cap add ios` / `android`, then build the native binary
+> with Xcode / Android Studio. No code changes required — it's the same app.
 
 ## 🧠 How it works
 
@@ -70,14 +110,16 @@ Every response carries the header `x-spyro-model: SPYRO-V1`.
 src/
 ├── app/
 │   ├── api/chat/route.ts     # SPYRO V1 streaming endpoint
+│   ├── manifest.ts           # PWA manifest
 │   ├── globals.css           # Dragon/fire theme
-│   ├── layout.tsx
+│   ├── layout.tsx            # PWA metadata + SW registrar
 │   └── page.tsx              # Main chat shell
 ├── components/spyro/
 │   ├── spyro-logo.tsx        # SVG dragon-flame mark
+│   ├── pwa-manager.tsx       # Registers the service worker
 │   ├── model-badge.tsx
 │   ├── chat-header.tsx
-│   ├── chat-sidebar.tsx      # Conversation list (rename/delete/new)
+│   ├── chat-sidebar.tsx      # Conversation list + Install button
 │   ├── chat-messages.tsx     # Auto-scroll + jump-to-bottom
 │   ├── chat-input.tsx        # Auto-resizing textarea, send/stop
 │   ├── message-bubble.tsx    # User/assistant bubbles + actions
@@ -85,9 +127,16 @@ src/
 │   ├── typing-indicator.tsx  # Flame-flicker dots
 │   ├── welcome-screen.tsx    # Empty state + suggestion cards
 │   └── theme-toggle.tsx
-├── hooks/use-spyro-chat.ts   # send / stop / regenerate streaming logic
+├── hooks/
+│   ├── use-spyro-chat.ts     # send / stop / regenerate streaming logic
+│   └── use-pwa-install.ts    # beforeinstallprompt handling
 ├── store/chat-store.ts       # Zustand + localStorage persistence
 └── lib/utils.ts
+public/
+├── sw.js                     # Service worker (installability + offline shell)
+└── icons/                    # PWA icons (192, 512, maskable, apple-touch, favicon)
+scripts/
+└── generate-icons.ts         # Regenerate icons from SVG via sharp
 ```
 
 ## 🛠️ Tech stack
@@ -98,6 +147,7 @@ src/
 - **Zustand** for client state (persisted)
 - **react-markdown** + **remark-gfm**
 - **next-themes** for dark/light mode
+- **sharp** for icon generation
 
 ## 🔒 Notes
 
