@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { useChatStore, type Message } from "@/store/chat-store";
+import type { SpyroModelId } from "@/lib/spyro-engine";
 
 interface SendOptions {
   conversationId?: string;
@@ -20,6 +21,7 @@ export function useSpyroChat() {
   const abortRef = useRef<AbortController | null>(null);
   const store = useChatStore;
   const [webSearch, setWebSearch] = useState(false);
+  const [model, setModel] = useState<SpyroModelId>("openai");
 
   const stop = useCallback(() => {
     abortRef.current?.abort();
@@ -74,7 +76,7 @@ export function useSpyroChat() {
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ messages: history, webSearch: useWebSearch }),
+          body: JSON.stringify({ messages: history, webSearch: useWebSearch, model }),
           signal: controller.signal,
         });
 
@@ -228,7 +230,7 @@ export function useSpyroChat() {
     await send(userText, { conversationId: active.id });
   }, [send, store]);
 
-  return { send, stop, regenerate, generateImage, webSearch, setWebSearch };
+  return { send, stop, regenerate, generateImage, webSearch, setWebSearch, model, setModel };
 }
 
 export type SpyroChatApi = ReturnType<typeof useSpyroChat>;
