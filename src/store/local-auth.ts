@@ -56,3 +56,19 @@ export const useLocalAuth = create<LocalAuthState>()(
     { name: "spyro-v1-local-auth" }
   )
 );
+
+/** Check if the user is a guest. */
+export function isGuest(user: LocalUser | null): boolean {
+  return user?.email === "guest@spyro.ai";
+}
+
+/** Tools available to guests (limited). Others require full account. */
+export const GUEST_TOOLS = new Set([
+  "image-gen", // Image Studio only (rate-limited)
+]);
+
+/** Check if a tool is available to the current user. */
+export function canAccessTool(toolId: string, user: LocalUser | null): boolean {
+  if (!isGuest(user)) return true;
+  return GUEST_TOOLS.has(toolId);
+}
